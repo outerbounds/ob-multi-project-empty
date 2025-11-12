@@ -1,0 +1,110 @@
+trigger:
+- main
+
+pr:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+
+- task: AzureCLI@2
+  displayName: 'Configure Outerbounds'
+  inputs:
+    azureSubscription: 'dev-ob'  # Replace with your Azure service connection name
+    addSpnToEnvironment: true
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      # Install dependencies first
+      python -m pip install -U pip
+      python -m pip install -U pyyaml requests toml 'outerbounds[azure]' ob-project-utils
+      
+      # Check if yq is available
+      which yq || (echo "yq not found, installing..." && wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod +x /usr/local/bin/yq)
+      
+      # Detect project configuration type
+      if [ -f "obproject_multi.toml" ]; then
+        echo "🔍 Multi-project repository detected"
+        
+        # For multi-project repos, read CI/CD config from the [cicd] section
+        CICD_USER=$(yq eval '.cicd.user' "obproject_multi.toml" || echo "")
+        PLATFORM=$(yq eval '.cicd.platform' "obproject_multi.toml" || echo "")
+        PERIMETER=$(yq eval '.cicd.perimeter // "default"' "obproject_multi.toml")
+        
+        # Validate required fields
+        if [ -z "$CICD_USER" ]; then
+          echo "❌ Missing required [cicd].user in obproject_multi.toml"
+          exit 1
+        fi
+        if [ -z "$PLATFORM" ]; then
+          echo "❌ Missing required [cicd].platform in obproject_multi.toml"
+          exit 1
+        fi
+        
+      elif [ -f "obproject.toml" ]; then
+        echo "🔍 Single-project repository detected"
+        
+        # For single-project repos, read from obproject.toml as before
+        PROJECT_NAME=$(yq eval '.project' "obproject.toml" || echo "")
+        if [ -z "$PROJECT_NAME" ]; then
+          echo "❌ Failed to read project name from obproject.toml"
+          exit 1
+        fi
+        
+        DEFAULT_CICD_USER="${PROJECT_NAME}-cicd"
+        PLATFORM=$(yq eval '.platform' "obproject.toml" || echo "")
+        if [ -z "$PLATFORM" ]; then
+          echo "❌ Failed to read platform from obproject.toml"
+          exit 1
+        fi
+        
+        CICD_USER=$(yq eval ".cicd_user // \"$DEFAULT_CICD_USER\"" "obproject.toml")
+        PERIMETER=$(yq eval ".perimeter // \"default\"" "obproject.toml")
+        
+      else
+        echo "❌ No obproject.toml or obproject_multi.toml found!"
+        exit 1
+      fi
+      
+      echo "🏗️ Deployment configuration:"
+      echo "  Platform: $PLATFORM"
+      echo "  CI/CD User: $CICD_USER"
+      echo "  Perimeter: $PERIMETER"
+      echo "  Config file: $CONFIG_FILE"
+      
+      # Configure Outerbounds
+      outerbounds service-principal-configure \
+        --name $CICD_USER \
+        --deployment-domain $PLATFORM \
+        --perimeter $PERIMETER \
+        --jwt-token $idToken
+
+- script: |
+    # Debug environment detection
+    echo "=== Debugging CI Environment ==="
+    echo "BUILD_SOURCEBRANCH: $(Build.SourceBranch)"
+    echo "SYSTEM_COLLECTIONURI: $(System.CollectionUri)"
+    echo "Git branch from rev-parse: $(git rev-parse --abbrev-ref HEAD)"
+    echo "Git status:"
+    git status
+    echo "=== Running deploy ==="
+    
+    obproject-deploy
+            
+  displayName: 'Deploy Project'
+  env:
+    # https://learn.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    PYTHONUNBUFFERED: 1
+    # Pass all Azure DevOps variables that the deploy script needs
+    BUILD_SOURCEBRANCH: $(Build.SourceBranch)
+    SYSTEM_PULLREQUEST_SOURCEBRANCH: $(System.PullRequest.SourceBranch)
+    SYSTEM_COLLECTIONURI: $(System.CollectionUri)
+    SYSTEM_TEAMPROJECT: $(System.TeamProject)
+    BUILD_REPOSITORY_NAME: $(Build.Repository.Name)
+    BUILD_REPOSITORY_ID: $(Build.Repository.ID)
+    BUILD_BUILDID: $(Build.BuildId)
+    SYSTEM_PULLREQUEST_PULLREQUESTID: $(System.PullRequest.PullRequestId)

@@ -1,0 +1,5 @@
+platform = 'dev-yellow.outerbounds.xyz'
+
+# MLOps Services project for deployed applications and dashboards
+project = 'mlops_services'
+title = 'MLOps Services and Applications'

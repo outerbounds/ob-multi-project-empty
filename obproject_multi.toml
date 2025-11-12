@@ -1,0 +1,18 @@
+# Multi-project configuration for Outerbounds deployment
+
+# CI/CD configuration for the entire repository
+# The [cicd] section is REQUIRED for multi-project repos to specify:
+# - user: The service principal/machine user for CI/CD (shared across all projects)
+# - platform: The Outerbounds platform domain (must be same for all projects)
+# - perimeter: Default perimeter (optional, defaults to "default")
+[cicd]
+user = "ob-multi-project-empty-cicd"     # Required: CI/CD service principal name
+platform = "dev-yellow.outerbounds.xyz"  # Required: Must match all project configs
+perimeter = "default"            # Optional: Can be overridden in project obproject.toml
+
+[projects]
+# Machine Learning Infrastructure project - contains Metaflow workflows
+ml_infra = "ml-infra"
+
+# MLOps Services project - contains deployed applications and dashboards
+mlops_services = "services"

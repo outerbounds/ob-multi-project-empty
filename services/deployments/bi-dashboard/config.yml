@@ -1,0 +1,9 @@
+name: bi-dashboard
+port: 8501
+
+commands:
+  - streamlit run app.py
+
+dependencies:
+  pypi:
+    streamlit: ""
