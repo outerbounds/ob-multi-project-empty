@@ -55,16 +55,3 @@ jobs:
       - store_artifacts:
           path: deployment_summary.md
           destination: deployment-summary
-
-# workflows:
-#   deploy:
-#     jobs:
-#       - deploy:
-#           # A context is REQUIRED for $CIRCLE_OIDC_TOKEN_V2 to be available.
-#           # The context can be empty - it just needs to exist and be referenced.
-#           # OIDC is enabled at the organization level, not the context level.
-#           context: outerbounds
-#           filters:
-#             branches:
-#               only:
-#                 - main
