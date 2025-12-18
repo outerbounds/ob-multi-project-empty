@@ -9,3 +9,6 @@ dependencies:
     fastapi: ""
     gunicorn: ""
     uvicorn: ""
+
+auth:
+  type: API
