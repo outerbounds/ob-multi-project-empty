@@ -2,7 +2,7 @@ name: mlops-api
 port: 8000
 
 commands:
-  - "gunicorn --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 main:app"
+  - "gunicorn --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 deployments.api.main:app"
 
 dependencies:
   pypi:
