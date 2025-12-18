@@ -14,4 +14,4 @@ perimeter = "default"            # Optional: Can be overridden in project obproj
 
 ml_infra = "ml-infra"
 batch_inference = "batch-inference"
-# mlops_services = "services"
+mlops_services = "services"
