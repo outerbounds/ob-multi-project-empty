@@ -5,7 +5,6 @@ This repository demonstrates how to organize multiple Outerbounds projects in a 
 ## Repository Structure
 
 ```
-.
 ├── obproject_multi.toml      # Multi-project manifest
 ├── ml-infra/                 # ML Infrastructure project
 │   ├── obproject.toml
@@ -48,7 +47,7 @@ Contains deployed applications:
 obproject-deploy
 ```
 
-### Deploy a specific project:
+### Deploy a specific project from the root of a multi-project tree:
 ```bash
 obproject-deploy --project ml_infra
 obproject-deploy --project batch_inference
