@@ -11,8 +11,7 @@ platform = "dev-yellow.outerbounds.xyz"  # Required: Must match all project conf
 perimeter = "default"            # Optional: Can be overridden in project obproject.toml
 
 [projects]
-# Machine Learning Infrastructure project - contains Metaflow workflows
-ml_infra = "ml-infra"
 
-# MLOps Services project - contains deployed applications and dashboards
-mlops_services = "services"
+ml_infra = "ml-infra"
+batch_inference = "batch-inference"
+# mlops_services = "services"

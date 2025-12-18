@@ -12,6 +12,11 @@ This repository demonstrates how to organize multiple Outerbounds projects in a 
 │   └── flows/
 │       └── test/
 │           └── flow.py
+├── batch-inference/          # Batch Inference project
+│   ├── obproject.toml
+│   └── flows/
+│       └── inference/
+│           └── flow.py
 └── services/                 # MLOps Services project
     ├── obproject.toml
     └── deployments/
@@ -28,7 +33,10 @@ This repository demonstrates how to organize multiple Outerbounds projects in a 
 ### 1. ML Infrastructure (`ml-infra`)
 Contains Metaflow workflows for machine learning pipelines and data processing.
 
-### 2. MLOps Services (`services`)
+### 2. Batch Inference (`batch-inference`)
+Contains batch inference workflows for running predictions at scale.
+
+### 3. MLOps Services (`services`)
 Contains deployed applications:
 - **API**: FastAPI service for model serving
 - **BI Dashboard**: Streamlit dashboard for business intelligence
@@ -43,6 +51,7 @@ obproject-deploy
 ### Deploy a specific project:
 ```bash
 obproject-deploy --project ml_infra
+obproject-deploy --project batch_inference
 obproject-deploy --project mlops_services
 ```
 
@@ -50,6 +59,7 @@ obproject-deploy --project mlops_services
 The repository includes CI/CD configurations for:
 - GitHub Actions (`.github/workflows/deploy.yml`)
 - Azure DevOps (`azure-pipelines.yml`)
+- CircleCI (`.circleci/config.yml`)
 
 ## Environment Variables
 
