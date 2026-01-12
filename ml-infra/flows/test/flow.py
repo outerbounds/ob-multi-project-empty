@@ -1,10 +1,14 @@
-from metaflow import FlowSpec, step
+from metaflow import step
 from obproject import ProjectFlow
+
+# Import shared module from repo root to trigger packaging
+import shared_utils
 
 class DataFlow(ProjectFlow):
     @step
     def start(self):
-        print("Processing data")
+        from shared_utils import get_version
+        print(f"Processing data with shared_utils version: {get_version()}")
         self.next(self.end)
 
     @step
