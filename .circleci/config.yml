@@ -3,46 +3,20 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: python:3.11
+      - image: python:3.12
     steps:
       - checkout
 
       - run:
           name: Install dependencies
-          command: |
-            python -m pip install -U pip
-            python -m pip install -U outerbounds ob-project-utils requests pyyaml
+          command: pip install outerbounds ob-project-utils
 
       - run:
           name: Configure Outerbounds
           command: |
-            # Detect project configuration type
-            if [ -f "obproject_multi.toml" ]; then
-              echo "Multi-project repository detected"
-              # Read CI/CD config from [cicd] section using Python (more portable than yq)
-              CICD_USER=$(python -c "import tomllib; print(tomllib.load(open('obproject_multi.toml', 'rb'))['cicd']['user'])")
-              PLATFORM=$(python -c "import tomllib; print(tomllib.load(open('obproject_multi.toml', 'rb'))['cicd']['platform'])")
-              PERIMETER=$(python -c "import tomllib; print(tomllib.load(open('obproject_multi.toml', 'rb'))['cicd'].get('perimeter', 'default'))")
-            elif [ -f "obproject.toml" ]; then
-              echo "Single-project repository detected"
-              PROJECT_NAME=$(python -c "import tomllib; print(tomllib.load(open('obproject.toml', 'rb'))['project'])")
-              PLATFORM=$(python -c "import tomllib; print(tomllib.load(open('obproject.toml', 'rb'))['platform'])")
-              CICD_USER=$(python -c "import tomllib; c=tomllib.load(open('obproject.toml', 'rb')); print(c.get('cicd_user', c['project'] + '-cicd'))")
-              PERIMETER=$(python -c "import tomllib; print(tomllib.load(open('obproject.toml', 'rb')).get('perimeter', 'default'))")
-            else
-              echo "No obproject.toml or obproject_multi.toml found!"
-              exit 1
-            fi
-
-            echo "Deployment configuration:"
-            echo "  Platform: $PLATFORM"
-            echo "  CI/CD User: $CICD_USER"
-            echo "  Perimeter: $PERIMETER"
-
             outerbounds service-principal-configure \
-              --name $CICD_USER \
-              --deployment-domain $PLATFORM \
-              --perimeter $PERIMETER \
+              --from-obproject-toml \
+              --toml-path obproject_multi.toml \
               --jwt-token $CIRCLE_OIDC_TOKEN_V2
 
       - run:
